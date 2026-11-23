@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lab 6 — TypeScript Protocol, Zod Validation &amp; Deterministic Arena</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="badge">LAB 6 • TS</span>
+      <h1>Strict TypeScript Arena <small>Branded Types • Zod Runtime Guards • DataView LE</small></h1>
+    </div>
+    <div class="status-pills">
+      <span id="connStatus" class="pill pill-offline">Disconnected</span>
+      <span id="roomPill" class="pill pill-muted">No Room</span>
+      <span id="protoPill" class="pill pill-binary">BINARY (DataView LE)</span>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <aside class="sidebar left-panel">
+      <section class="card">
+        <h2>Pilot &amp; Rooms</h2>
+        <div class="field-row">
+          <input id="pilotNameInput" type="text" maxlength="18" placeholder="Callsign..." />
+          <button id="saveNameBtn" class="btn btn-secondary">Set</button>
+        </div>
+
+        <div class="field-row mt-8">
+          <input id="newRoomInput" type="text" maxlength="28" placeholder="New room name..." />
+          <button id="createRoomBtn" class="btn btn-primary">Create</button>
+        </div>
+
+        <div id="roomList" class="room-list"></div>
+      </section>
+
+      <section class="card roster-card">
+        <h2>Arena Roster</h2>
+        <div id="rosterList" class="roster-list">
+          <div class="muted">Join a room to see pilots</div>
+        </div>
+      </section>
+
+      <section class="card chat-card">
+        <h2>Room Chat</h2>
+        <div id="chatMessages" class="chat-messages"></div>
+        <form id="chatForm" class="field-row mt-8">
+          <input id="chatInput" type="text" maxlength="220" placeholder="Message room..." autocomplete="off" />
+          <button type="submit" class="btn btn-primary">Send</button>
+        </form>
+      </section>
+    </aside>
+
+    <section class="arena-wrapper">
+      <div class="canvas-frame">
+        <canvas id="gameCanvas" width="1000" height="680"></canvas>
+      </div>
+      <div class="controls-bar">
+        <span><kbd>W</kbd> / <kbd>↑</kbd> Thrust</span>
+        <span><kbd>A</kbd> <kbd>D</kbd> / <kbd>←</kbd> <kbd>→</kbd> Rotate</span>
+        <span><kbd>Space</kbd> Fire (instant local bullet)</span>
+        <span class="tip">Tip: Open two tabs at <code>http://localhost:3000</code> to test multiplayer!</span>
+      </div>
+    </section>
+
+    <aside class="sidebar right-panel">
+      <section class="card">
+        <h2>Netcode &amp; Protocol Lab</h2>
+
+        <label class="toggle-row">
+          <div>
+            <strong>Client-Side Prediction</strong>
+            <div class="sub">Immediate local movement + reconciliation</div>
+          </div>
+          <input id="predictionToggle" type="checkbox" checked />
+        </label>
+
+        <label class="toggle-row">
+          <div>
+            <strong>Protocol: Binary (DataView)</strong>
+            <div class="sub">Uncheck to compare Zod-validated JSON</div>
+          </div>
+          <input id="binaryToggle" type="checkbox" checked />
+        </label>
+
+        <label class="toggle-row">
+          <div>
+            <strong>Show Server Ghost</strong>
+            <div class="sub">Wireframe of raw server snapshot state</div>
+          </div>
+          <input id="ghostToggle" type="checkbox" checked />
+        </label>
+
+        <label class="toggle-row warn-row">
+          <div>
+            <strong>Inject Math.random() Bug</strong>
+            <div class="sub">Test desync &amp; reconciliation spikes</div>
+          </div>
+          <input id="randomBugToggle" type="checkbox" />
+        </label>
+      </section>
+
+      <section class="card">
+        <h2>Artificial Network Simulator</h2>
+        <p class="sub mb-8">Simulates one-way delay (RTT ≈ 2× delay), jitter &amp; packet loss.</p>
+
+        <div class="slider-group">
+          <div class="slider-header">
+            <span>One-Way Delay</span>
+            <strong id="delayVal">50 ms (RTT ~100 ms)</strong>
+          </div>
+          <input id="delaySlider" type="range" min="0" max="250" step="5" value="50" />
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-header">
+            <span>Jitter</span>
+            <strong id="jitterVal">10 ms</strong>
+          </div>
+          <input id="jitterSlider" type="range" min="0" max="80" step="2" value="10" />
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-header">
+            <span>Packet Loss</span>
+            <strong id="lossVal">0 %</strong>
+          </div>
+          <input id="lossSlider" type="range" min="0" max="25" step="1" value="0" />
+        </div>
+
+        <div class="preset-row">
+          <button class="btn btn-secondary btn-sm" data-preset="lan">LAN (0ms)</button>
+          <button class="btn btn-secondary btn-sm" data-preset="lab">Lab (100ms RTT)</button>
+          <button class="btn btn-secondary btn-sm" data-preset="lossy">Lossy (180ms + 8%)</button>
+        </div>
+      </section>
+
+      <section class="card telemetry-summary">
+        <h2>Packet Size Telemetry</h2>
+        <div class="stat-grid">
+          <div class="stat-box">
+            <span class="stat-label">Last Input Packet</span>
+            <strong id="lastTxSize">11 B</strong>
+          </div>
+          <div class="stat-box">
+            <span class="stat-label">Last Snapshot</span>
+            <strong id="lastRxSize">100 B</strong>
+          </div>
+        </div>
+      </section>
+    </aside>
+  </main>
+
+  <script type="module" src="/main.js"></script>
+</body>
+</html>
